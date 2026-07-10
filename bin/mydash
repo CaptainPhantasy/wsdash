@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+import os
+import shutil
+import sys
+
+os.environ.setdefault("WSDASH_APP_NAME", "mydash")
+APP_NAME = os.environ["WSDASH_APP_NAME"]
+
+
+def _ensure_python() -> None:
+    minimum = (3, 11)
+    if sys.version_info >= minimum:
+        return
+
+    candidate_env = os.environ.get("WSDASH_PYTHON")
+    candidates = []
+    if candidate_env:
+        candidates.append(candidate_env)
+    candidates.extend(["python3.11"])
+
+    exe_candidates = []
+    for candidate in candidates:
+        exe = shutil.which(candidate)
+        if not exe:
+            continue
+        if os.path.realpath(exe) == os.path.realpath(sys.executable):
+            continue
+        exe_candidates.append(exe)
+
+    if exe_candidates:
+        os.execv(exe_candidates[0], [exe_candidates[0], *sys.argv])
+
+    current = ".".join(map(str, sys.version_info[:3]))
+    message = (
+        f"{APP_NAME} now requires Python 3.11 or newer when launched via bin/{APP_NAME}.\n"
+        f"Current interpreter: {current}\n"
+        "Install Python 3.11+ and run with it, or set WSDASH_PYTHON to a "
+        "supported executable.\n"
+        f"Example: WSDASH_PYTHON=/opt/homebrew/bin/python3.11 ./bin/{APP_NAME}\n"
+    )
+    sys.stderr.write(message)
+    sys.exit(78)
+
+
+_ensure_python()
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from wsdash.cli import main  # noqa: E402
+
+sys.exit(main())
