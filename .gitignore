@@ -1,0 +1,23 @@
+.DS_Store
+
+# Python cache artifacts
+__pycache__/
+*.py[cod]
+
+# Local env and runtime state
+.env.local
+.env.*
+!.env.local.example
+
+# Agent and governance working state
+.floyd/
+.supercache/
+FLOYD.md
+Issues/
+SSOT/
+
+# Local QA evidence and scratch planning files
+dogfood-output/
+findings.md
+progress.md
+task_plan.md
