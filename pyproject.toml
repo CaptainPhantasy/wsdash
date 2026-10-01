@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wsdash"
+version = "0.2.0"
+description = "On-demand workspace dashboard from Floyd's Labs"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "Floyd's Labs"}]
+dependencies = []
+
+[project.scripts]
+wsdash = "wsdash.cli:main"
+mydash = "wsdash.cli:mydash_main"
+
+[project.urls]
+Homepage = "https://floyd-labs-proving-ground.captainphantasy.chatgpt.site/open-source"
+Repository = "https://github.com/CaptainPhantasy/wsdash"
+Issues = "https://github.com/CaptainPhantasy/wsdash/issues"
+
+[tool.setuptools.packages.find]
+include = ["wsdash*"]
