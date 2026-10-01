@@ -799,3 +799,9 @@ def main(argv=None) -> int:
         mb = rss / (1024 * 1024) if sys.platform == "darwin" else rss / 1024
         print(f"peak_rss_mb={mb:.1f}", file=sys.stderr)
     return rc
+
+
+def mydash_main():
+    import os
+    os.environ.setdefault("WSDASH_APP_NAME", "mydash")
+    return main()

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc"><title id="title">Floyd's Labs</title><desc id="desc">A measured square frame holds a prism: one input becomes two useful paths.</desc><g fill="none" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M34 88V34H88M168 34H222V88M222 168V222H168M88 222H34V168" stroke="#f3eee3" stroke-width="12"/>
+      <path d="M128 64L72 184H184Z" stroke="#f3eee3" stroke-width="12"/>
+      <path d="M34 128H94" stroke="#ffba49" stroke-width="12"/>
+      <path d="M153 117L222 94" stroke="#80cdc4" stroke-width="12"/>
+      <path d="M162 139L222 163" stroke="#ffba49" stroke-width="12"/>
+    </g></svg>

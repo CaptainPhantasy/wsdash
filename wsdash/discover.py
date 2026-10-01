@@ -66,6 +66,11 @@ def find_workspaces(cfg: dict) -> dict:
                 ws["kind"], ws["repo_root"] = kind, repo_root or real
 
     for root in config.roots(cfg):
+        if gitutil.is_repo(root):
+            add(root, "repo", "scan")
+            for wt in _worktrees_of(root):
+                if os.path.realpath(wt) != root and os.path.isdir(wt):
+                    add(wt, "worktree", "scan", repo_root=root)
         stack = [(root, 0)]
         while stack:
             d, depth = stack.pop()

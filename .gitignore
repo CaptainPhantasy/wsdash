@@ -21,3 +21,7 @@ dogfood-output/
 findings.md
 progress.md
 task_plan.md
+
+build/
+dist/
+*.egg-info/

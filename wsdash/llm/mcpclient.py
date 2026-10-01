@@ -131,3 +131,8 @@ class MCPClient:
                 self.proc.wait(timeout=5)
             except (subprocess.TimeoutExpired, OSError):
                 self.proc.kill()
+                self.proc.wait(timeout=5)
+        if self.proc:
+            for stream in (self.proc.stdin, self.proc.stdout):
+                if stream:
+                    stream.close()
