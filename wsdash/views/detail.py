@@ -43,7 +43,8 @@ def _legend(model, thr: float) -> list:
 
 
 def render(model: dict) -> str:
-    docs = sorted(model["workspaces"], key=lambda d: (-d.get("score", 0), d.get("name", "")))
+    # CLI already applied --sort / --reverse. Do not reorder workspaces here.
+    docs = model["workspaces"]
     thr = float(model["config"].get("incomplete_threshold", 15.0))
     if not docs:
         return "\n".join([
@@ -66,7 +67,9 @@ def render(model: dict) -> str:
         if not visible:
             if doc.get("status") == "disconnected":
                 out.append("  no signals stored. the path is missing, so the last score is kept.")
-                out.append("  next: reconnect the path, then rerun wsdash view --view detail <path>")
+                out.append("  next: reconnect the path, then wsdash scan")
+                out.append(f"        wsdash score --force {doc['path']}")
+                out.append("        wsdash view --view detail <path>")
             else:
                 out.append("  no signals for this workspace.")
                 out.append(f"  next: wsdash score --force {doc['path']}")

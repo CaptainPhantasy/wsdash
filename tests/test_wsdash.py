@@ -208,6 +208,10 @@ class WsdashTests(unittest.TestCase):
         self.assertIn("disconnected", opened)
         self.assertIn("not computed yet", opened)
         self.assertIn("reconnect the path", opened)
+        self.assertIn("wsdash scan", opened)
+        self.assertIn("wsdash score --force /missing", opened)
+        self.assertLess(opened.index("wsdash scan"), opened.index("wsdash score --force"))
+        self.assertLess(opened.index("wsdash score --force"), opened.index("wsdash view --view detail"))
 
     def test_09c_detail_orders_signals_by_contribution(self):
         reg = discover.sync_registry(self.cfg)
@@ -223,6 +227,53 @@ class WsdashTests(unittest.TestCase):
                 contribs.append(float(token))
         self.assertGreaterEqual(len(contribs), 2)
         self.assertEqual(contribs, sorted(contribs, reverse=True))
+
+    def test_09c2_plain_incomplete_rows_have_no_escapes(self):
+        views, _ = views_pkg.load_views()
+        doc = {
+            "name": "half-done", "kind": "repo", "score": 40.0, "status": "incomplete",
+            "path": "/tmp/half-done", "computed_at": 1,
+            "signals": [{
+                "name": "diff_bytes", "detail": "dirty", "normalized": 0.4,
+                "weight": 1.0, "error": None, "value": 12,
+            }],
+        }
+        model = {"workspaces": [doc], "config": self.cfg, "color": False}
+        out = views["table"].render(model)
+        self.assertIn("INCOMPLETE", out)
+        self.assertNotIn("\x1b[", out)
+        colored = views["table"].render({**model, "color": True})
+        row = next(ln for ln in colored.splitlines() if "INCOMPLETE" in ln and "half-done" in ln)
+        self.assertIn("\x1b[", row)
+
+    def test_09c3_detail_keeps_cli_workspace_order(self):
+        views, _ = views_pkg.load_views()
+
+        def ws(name, score):
+            return {
+                "name": name, "kind": "repo", "score": score, "status": "ok",
+                "path": f"/tmp/{name}", "computed_at": 1,
+                "signals": [
+                    {"name": "small", "value": 1, "normalized": 0.1, "weight": 0.2,
+                     "detail": "low", "error": None},
+                    {"name": "large", "value": 9, "normalized": 0.9, "weight": 0.8,
+                     "detail": "high", "error": None},
+                ],
+            }
+
+        alpha, zeta = ws("alpha", 1.0), ws("zeta", 90.0)
+        model = {"config": self.cfg, "color": False}
+
+        def rendered(docs):
+            return views["detail"].render({**model, "workspaces": docs})
+
+        forward = rendered([alpha, zeta])
+        self.assertLess(forward.index("alpha"), forward.index("zeta"))
+        backward = rendered([zeta, alpha])
+        self.assertLess(backward.index("zeta"), backward.index("alpha"))
+        # Signals inside a workspace still sort by contribution, largest first.
+        alpha_block = forward.split("zeta", 1)[0]
+        self.assertLess(alpha_block.index("large"), alpha_block.index("small"))
 
     def test_09d_doctor_failures_say_what_to_do(self):
         from wsdash import doctor
