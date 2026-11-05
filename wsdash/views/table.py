@@ -13,8 +13,6 @@ def _c(model, code, s):
 
 
 def _style(model, s, *, color="", bold=False):
-    if bold and not model.get("color"):
-        return f"{BOLD}{s}{RESET}"
     if not model.get("color"):
         return s
     prefix = (BOLD if bold else "") + (color or "")
