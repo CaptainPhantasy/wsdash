@@ -181,6 +181,127 @@ class WsdashTests(unittest.TestCase):
         out = views["table"].render({"workspaces": [doc], "config": self.cfg, "color": False})
         self.assertIn("demo-repo", out)
         self.assertIn("INCOMPLETE", out)
+        header = next(ln for ln in out.splitlines() if "STATUS" in ln and "WORKSPACE" in ln)
+        self.assertLess(header.index("STATUS"), header.index("SCORE"))
+        self.assertLess(header.index("SCORE"), header.index("WORKSPACE"))
+        self.assertLess(header.index("WORKSPACE"), header.index("KIND"))
+
+    def test_09b_empty_states_and_status_labels(self):
+        views, _ = views_pkg.load_views()
+        model = {"workspaces": [], "config": self.cfg, "color": False}
+        table = views["table"].render(model)
+        self.assertIn("no workspaces to show.", table)
+        self.assertIn("next: wsdash scan", table)
+        self.assertIn("INCOMPLETE", table)
+        detail = views["detail"].render(model)
+        self.assertIn("no workspace to open.", detail)
+        self.assertIn("wsdash view --view detail <path>", detail)
+
+        ghost = {
+            "name": "ghost", "kind": "repo", "score": 4.0, "status": "disconnected",
+            "path": "/missing", "signals": [], "computed_at": 0,
+        }
+        shown = views["table"].render({"workspaces": [ghost], "config": self.cfg, "color": False})
+        self.assertIn("disconnected", shown)
+        self.assertNotIn("DISCONNECTED", shown)
+        opened = views["detail"].render({"workspaces": [ghost], "config": self.cfg, "color": False})
+        self.assertIn("disconnected", opened)
+        self.assertIn("not computed yet", opened)
+        self.assertIn("reconnect the path", opened)
+        self.assertIn("wsdash scan", opened)
+        self.assertIn("wsdash score --force /missing", opened)
+        self.assertLess(opened.index("wsdash scan"), opened.index("wsdash score --force"))
+        self.assertLess(opened.index("wsdash score --force"), opened.index("wsdash view --view detail"))
+
+    def test_09c_detail_orders_signals_by_contribution(self):
+        reg = discover.sync_registry(self.cfg)
+        ws = self._repo_ws(reg)
+        doc, _ = scoring.get_score(ws, self.cfg, force=True)
+        views, _ = views_pkg.load_views()
+        out = views["detail"].render({"workspaces": [doc], "config": self.cfg, "color": False})
+        self.assertIn("INCOMPLETE", out)
+        contribs = []
+        for line in out.splitlines():
+            token = line.strip().split()[0] if line.strip() else ""
+            if token.startswith("+"):
+                contribs.append(float(token))
+        self.assertGreaterEqual(len(contribs), 2)
+        self.assertEqual(contribs, sorted(contribs, reverse=True))
+
+    def test_09c2_plain_incomplete_rows_have_no_escapes(self):
+        views, _ = views_pkg.load_views()
+        doc = {
+            "name": "half-done", "kind": "repo", "score": 40.0, "status": "incomplete",
+            "path": "/tmp/half-done", "computed_at": 1,
+            "signals": [{
+                "name": "diff_bytes", "detail": "dirty", "normalized": 0.4,
+                "weight": 1.0, "error": None, "value": 12,
+            }],
+        }
+        model = {"workspaces": [doc], "config": self.cfg, "color": False}
+        out = views["table"].render(model)
+        self.assertIn("INCOMPLETE", out)
+        self.assertNotIn("\x1b[", out)
+        colored = views["table"].render({**model, "color": True})
+        row = next(ln for ln in colored.splitlines() if "INCOMPLETE" in ln and "half-done" in ln)
+        self.assertIn("\x1b[", row)
+
+    def test_09c3_detail_keeps_cli_workspace_order(self):
+        views, _ = views_pkg.load_views()
+
+        def ws(name, score):
+            return {
+                "name": name, "kind": "repo", "score": score, "status": "ok",
+                "path": f"/tmp/{name}", "computed_at": 1,
+                "signals": [
+                    {"name": "small", "value": 1, "normalized": 0.1, "weight": 0.2,
+                     "detail": "low", "error": None},
+                    {"name": "large", "value": 9, "normalized": 0.9, "weight": 0.8,
+                     "detail": "high", "error": None},
+                ],
+            }
+
+        alpha, zeta = ws("alpha", 1.0), ws("zeta", 90.0)
+        model = {"config": self.cfg, "color": False}
+
+        def rendered(docs):
+            return views["detail"].render({**model, "workspaces": docs})
+
+        forward = rendered([alpha, zeta])
+        self.assertLess(forward.index("alpha"), forward.index("zeta"))
+        backward = rendered([zeta, alpha])
+        self.assertLess(backward.index("zeta"), backward.index("alpha"))
+        # Signals inside a workspace still sort by contribution, largest first.
+        alpha_block = forward.split("zeta", 1)[0]
+        self.assertLess(alpha_block.index("large"), alpha_block.index("small"))
+
+    def test_09d_doctor_failures_say_what_to_do(self):
+        from wsdash import doctor
+        self.assertIn("git", doctor.NEXT_ON_FAIL)
+        self.assertIn("launchd-loaded", doctor.NEXT_ON_FAIL)
+        with patch("wsdash.doctor.shutil.which", return_value=None):
+            checks = doctor.run_checks(self.cfg)
+        git = next(c for c in checks if c["check"] == "git")
+        self.assertFalse(git["ok"])
+        self.assertIn("Install git", git["next"])
+        for check in checks:
+            if not check["ok"]:
+                self.assertTrue(check.get("next"), check["check"])
+            else:
+                self.assertNotIn("next", check)
+
+    def test_09e_help_points_at_scan_and_doctor(self):
+        import io
+        from contextlib import redirect_stdout
+        from wsdash.cli import main
+        buf = io.StringIO()
+        with self.assertRaises(SystemExit) as caught:
+            with redirect_stdout(buf):
+                main(["--help"])
+        self.assertEqual(caught.exception.code, 0)
+        text = buf.getvalue()
+        self.assertIn("wsdash scan", text)
+        self.assertIn("wsdash doctor", text)
 
     def test_10_git_hook_event_targeted_recompute(self):
         reg = discover.sync_registry(self.cfg)
