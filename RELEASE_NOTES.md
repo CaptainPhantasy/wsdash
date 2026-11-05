@@ -30,10 +30,26 @@ Desktop Commander. An OpenAI-compatible or Anthropic endpoint for the Partner
 
 ## Install / upgrade
 
+Release wheel (download `wsdash-0.2.0-py3-none-any.whl` from the tagged release).
+The wheel covers version, scan, and view. Leave `wsdash install`, launchd, and git
+hooks for the checkout until the installer can call the wheel entry points.
+
 ```sh
-ln -sf <checkout>/bin/wsdash ~/.local/bin/wsdash
-wsdash scan && wsdash install && wsdash doctor   # doctor: 10/10 OK expected
-cp <checkout>/.env.local.example ~/.wsdash/.env.local && chmod 600 ~/.wsdash/.env.local
+python3 -m venv .venv
+.venv/bin/python -m pip install ./wsdash-0.2.0-py3-none-any.whl
+.venv/bin/wsdash --version
+.venv/bin/wsdash scan
+.venv/bin/wsdash
+```
+
+Checkout (in-tree launchers, no pip). Run from the repository root. This is the
+path that can install launchd watchers and git hooks:
+
+```sh
+ln -sf "$PWD/bin/wsdash" ~/.local/bin/wsdash
+ln -sf "$PWD/bin/mydash" ~/.local/bin/mydash
+wsdash scan && wsdash install && wsdash doctor   # doctor: 10/10 OK expected on macOS
+cp .env.local.example ~/.wsdash/.env.local && chmod 600 ~/.wsdash/.env.local
 ```
 
 Docs: [QUICKSTART](docs/QUICKSTART.md) · [USER_MANUAL](docs/USER_MANUAL.md) ·

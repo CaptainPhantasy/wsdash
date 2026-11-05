@@ -267,7 +267,10 @@ def _clear_cache(cfg, target):
 
 def main(argv=None) -> int:
     app_name = _app_name()
-    p = argparse.ArgumentParser(prog=app_name, description="workspace dirtiness dashboard")
+    p = argparse.ArgumentParser(
+        prog=app_name,
+        description="On-demand workspace dashboard. First run: wsdash scan. If a command fails: wsdash doctor.",
+    )
     from . import __version__
     from .llm import envfile as llm_envfile
 
@@ -280,7 +283,7 @@ def main(argv=None) -> int:
     p.add_argument("--no-color", action="store_true", help="disable colored output")
 
     sub = p.add_subparsers(dest="cmd")
-    sub.add_parser("scan", help="discover workspaces into the registry")
+    sub.add_parser("scan", help="discover workspaces into the registry; run this before the first dashboard")
 
     def _add_view_parser(name, *, help_text):
         vp = sub.add_parser(name, help=help_text)
@@ -289,11 +292,11 @@ def main(argv=None) -> int:
         _add_filter_args(vp)
         return vp
 
-    _add_view_parser("view", help_text="render dashboard and exit (default)")
+    _add_view_parser("view", help_text="render the dashboard and exit (default when you run wsdash)")
     _add_view_parser("ls", help_text="alias for view")
     _add_view_parser("list", help_text="alias for view")
 
-    sp = sub.add_parser("score", help="compute/print scores")
+    sp = sub.add_parser("score", help="print workspace scores; --force ignores the cache")
     sp.add_argument("path", nargs="?")
     sp.add_argument("--force", action="store_true", help="ignore cache")
     _add_filter_args(sp)
@@ -346,12 +349,13 @@ def main(argv=None) -> int:
     hp.add_argument("source", choices=["fs", "git"])
     hp.add_argument("path", nargs="?")
 
-    sub.add_parser("install", help="install launchd agent + git hooks")
+    sub.add_parser("install", help="install the macOS launchd agent and git hooks; rerun after the workspace set changes")
     uninstall = sub.add_parser("uninstall", help="remove launchd agent + git hooks")
     uninstall.add_argument("--yes", action="store_true", help="confirm destructive uninstall without prompt")
 
-    dp = sub.add_parser("doctor", help="health checks")
-    dp.add_argument("--repair", action="store_true")
+    dp = sub.add_parser("doctor", help="health checks; each FAIL line prints a next step")
+    dp.add_argument("--repair", action="store_true",
+                    help="purge quarantined state files and rescan the registry")
 
     prov = sub.add_parser("providers", help="list registered signal providers")
     prov.add_argument("--json", action="store_true", help="machine-readable")
@@ -406,6 +410,8 @@ def main(argv=None) -> int:
                 reg = discover.sync_registry(cfg)
         except TimeoutError as exc:
             print(f"scan error: {exc}", file=sys.stderr)
+            print("next: wait for the other wsdash command to finish, then rerun wsdash scan",
+                  file=sys.stderr)
             return 1
         out = [{"id": w["id"], "path": w["path"], "kind": w["kind"], "sources": w["sources"],
                "missing": w.get("missing", False)} for w in reg["workspaces"].values()]
@@ -415,7 +421,9 @@ def main(argv=None) -> int:
             for w in out:
                 print(f"{w['kind']:<12} {w['path']}{'  [disconnected]' if w['missing'] else ''}")
         else:
-            print("no workspaces found under roots: " + ", ".join(cfg["roots"]))
+            roots = ", ".join(cfg["roots"]) or "(none configured)"
+            print(f"no workspaces found under roots: {roots}")
+            print(f"next: add directories to roots in {config.config_path()}, then rerun wsdash scan")
 
     elif command in {"view", "ls", "list"}:
         path = getattr(args, "path", None)
@@ -432,6 +440,7 @@ def main(argv=None) -> int:
             print(f"view plugin error: {e}", file=sys.stderr)
         if view_name not in views:
             print(f"unknown view '{view_name}'; available: {', '.join(sorted(views))}", file=sys.stderr)
+            print("next: wsdash views", file=sys.stderr)
             rc = 2
         elif args.json:
             _print_json(docs)
@@ -493,6 +502,7 @@ def main(argv=None) -> int:
             _print_json(docs)
         elif not docs:
             print("no matches")
+            print("next: wsdash scan if that workspace is not registered, or try a shorter query")
         else:
             for d in docs:
                 print(f"{d['score']:>6.1f}  {d['status']:<12} {d['name']}  {d['path']}")
@@ -632,6 +642,8 @@ def main(argv=None) -> int:
                 reg = discover.sync_registry(cfg)
         except TimeoutError as exc:
             print(f"install error: {exc}", file=sys.stderr)
+            print("next: wait for the other wsdash command to finish, then rerun wsdash install",
+                  file=sys.stderr)
             return 1
         rep = installer.install_launchd(cfg, reg)
         hooks = installer.install_git_hooks(cfg, reg)
@@ -639,6 +651,9 @@ def main(argv=None) -> int:
         print(json.dumps(rep, indent=2) if args.json else
               f"launchd: loaded={rep['loaded']} watch_paths={rep['watch_paths']} plist={rep['plist']}\n"
               f"git hooks installed: {len(hooks)}")
+        if not rep["loaded"]:
+            print("next: launchd did not load the agent. On macOS, rerun wsdash doctor. "
+                  "The dashboard still runs with wsdash scan && wsdash.", file=sys.stderr)
         rc = 0 if rep["loaded"] else 1
 
     elif command == "uninstall":
@@ -663,6 +678,8 @@ def main(argv=None) -> int:
         else:
             for c in checks:
                 print(f"{'OK  ' if c['ok'] else 'FAIL'} {c['check']:<18} {c['detail']}")
+                if not c["ok"] and c.get("next"):
+                    print(f"{'':<24}next: {c['next']}")
         rc = 0 if all(c["ok"] for c in checks) else 1
 
     elif command == "providers":

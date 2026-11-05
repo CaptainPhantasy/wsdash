@@ -45,7 +45,7 @@ wsdash [--version] [--mem] [--json] <command>
 | `wsdash suggest` | Predictive layer (lazy-loaded): suggests relevant workspaces from branch-token overlap, event co-activity clusters, and local dependency links (`package.json file:`, `requirements -e`, `go.mod replace`). |
 | `wsdash install` | Write + bootstrap the launchd WatchPaths agent and install chain-safe git hooks in every registered repo. Idempotent; also the fix for watch-set drift. |
 | `wsdash uninstall` | Bootout + remove the agent; remove our git hooks, restoring any chained originals. |
-| `wsdash doctor [--repair]` | 10 health checks (python, git, state, registry, cache integrity, plist, agent loaded, watch-set sync, zero-idle, memory ceiling). `--repair` purges quarantined files and rebuilds the registry. |
+| `wsdash doctor [--repair]` | 10 health checks (python, git, state, registry, cache integrity, plist, agent loaded, watch-set sync, zero-idle, memory ceiling). A failed check prints `next:` with what to do. `--repair` purges quarantined files and rebuilds the registry. |
 | `wsdash providers` / `wsdash views` | List registered signal providers / views with source (builtin/user) and gate class. |
 | `wsdash chat [-m MSG] [--mode M] [--no-mcp]` | LLM Partner REPL, or one-shot with `-m`. |
 | `wsdash recap [--hours N] [--ask Q]` | Harness-log scan (§7); `--ask` routes the question through the Partner. |
