@@ -2,7 +2,9 @@
 
 Start with `wsdash doctor` — it checks python, git, state writability, registry,
 cache integrity, the launchd plist + load state, watch-set sync, zero-idle, and the
-memory ceiling, and its exit code is 0 only when everything passes.
+memory ceiling, and its exit code is 0 only when everything passes. Each FAIL line
+is followed by `next:` with the command or fix to try. Do that, then rerun
+`wsdash doctor`.
 
 ## Chat / LLM Partner
 

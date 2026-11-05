@@ -5,16 +5,33 @@ beyond macOS, Python 3.11+, and git (Node/npx only if you want Desktop Commander
 
 ## 1. Install
 
-wsdash is a plain directory — no pip, no build step.
+Pick one path. Both end at the same `wsdash` command. `wsdash --version` prints `wsdash 0.2.0`.
+
+### Release wheel
+
+If you downloaded `wsdash-0.2.0-py3-none-any.whl` (see the README), install it into a virtualenv and use that environment's `wsdash`:
 
 ```sh
-# from the repository checkout, put both launchers on the PATH:
+python3 -m venv .venv
+.venv/bin/python -m pip install ./wsdash-0.2.0-py3-none-any.whl
+.venv/bin/wsdash --version
+.venv/bin/wsdash scan
+.venv/bin/wsdash
+```
+
+### Checkout
+
+A git checkout is a plain directory. No pip step. From the repository root, put both launchers on the PATH:
+
+```sh
 ln -sf "$PWD/bin/wsdash" ~/.local/bin/wsdash
 ln -sf "$PWD/bin/mydash" ~/.local/bin/mydash
 
-wsdash --version        # → wsdash 0.2.0b1
-mydash --version         # → mydash 0.2.0b1
+wsdash --version        # wsdash 0.2.0
+mydash --version        # mydash 0.2.0
 ```
+
+`~/.local/bin` needs to be on your PATH. The checkout launchers require Python 3.11+.
 
 ## 2. See your workspaces
 
@@ -36,8 +53,10 @@ path changes; otherwise the idle footprint is zero processes.
 
 ## 4. Configure the LLM Partner
 
+The template is `.env.local.example` in a checkout (it is not inside the installed wheel). Copy it, then edit:
+
 ```sh
-cp .env.local.example ~/.wsdash/.env.local   # then edit
+cp .env.local.example ~/.wsdash/.env.local   # from the repository root
 chmod 600 ~/.wsdash/.env.local
 ```
 
@@ -74,10 +93,11 @@ wsdash chat -m "Where did I leave off yesterday? What should I pick up first?"
 ```sh
 wsdash uninstall             # removes launchd agent + restores chained git hooks
 mydash uninstall             # same executable name, same behavior
-rm ~/.local/bin/wsdash
-rm ~/.local/bin/mydash
-rm -rf ~/.wsdash             # state, config, transcripts
 ```
+
+Checkout launchers also need the symlinks removed: `rm ~/.local/bin/wsdash ~/.local/bin/mydash`.
+A wheel install leaves those alone; delete the virtualenv instead.
+Either path: `rm -rf ~/.wsdash` removes state, config, and transcripts.
 
 Next: [USER_MANUAL.md](USER_MANUAL.md) · [CONFIGURATION.md](CONFIGURATION.md) ·
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md) · [SECURITY.md](SECURITY.md)
