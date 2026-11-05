@@ -4,7 +4,7 @@
 
 ## Or: another brick in the unfinished pile
 
-You left the work somewhere. wsdash scores it — git changes, stale worktrees, failing tests, the rest of the mess — prints a table, and exits. Nothing sits in the background charging rent.
+You left the work somewhere. wsdash scores it — Git changes, stale worktrees, failing tests, the rest of the mess — prints a table, and exits. Nothing sits in the background charging rent.
 
 Built at Floyd's Labs, in a garage in Brown County, Indiana. The coffee tastes like motor oil. 2:47 AM is a normal shift. Tools have to earn the desk.
 
