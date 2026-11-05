@@ -423,7 +423,7 @@ def main(argv=None) -> int:
         else:
             roots = ", ".join(cfg["roots"]) or "(none configured)"
             print(f"no workspaces found under roots: {roots}")
-            print("next: add directories to roots in ~/.wsdash/config.json, then rerun wsdash scan")
+            print(f"next: add directories to roots in {config.config_path()}, then rerun wsdash scan")
 
     elif command in {"view", "ls", "list"}:
         path = getattr(args, "path", None)
