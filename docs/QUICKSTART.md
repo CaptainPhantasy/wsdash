@@ -5,19 +5,22 @@ beyond macOS, Python 3.11+, and git (Node/npx only if you want Desktop Commander
 
 ## 1. Install
 
-Pick one path. Both end at the same `wsdash` command. `wsdash --version` prints `wsdash 0.2.0`.
+Pick one path. `wsdash --version` prints `wsdash 0.2.0`. Both paths can scan and view. Launchd and git hooks are the checkout path only, until the installer can call the wheel entry points.
 
 ### Release wheel
 
-If you downloaded `wsdash-0.2.0-py3-none-any.whl` (see the README), install it into a virtualenv and use that environment's `wsdash`:
+If you downloaded `wsdash-0.2.0-py3-none-any.whl` (see the README), install it into a virtualenv and activate that environment. Later sections call bare `wsdash`. That resolves only while this virtualenv is active. In a new shell, run `. .venv/bin/activate` again, or call `.venv/bin/wsdash`.
 
 ```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install ./wsdash-0.2.0-py3-none-any.whl
-.venv/bin/wsdash --version
-.venv/bin/wsdash scan
-.venv/bin/wsdash
+. .venv/bin/activate
+wsdash --version
+wsdash scan
+wsdash
 ```
+
+Stop here for integration. The wheel does not set up launchd or git hooks. Skip section 3.
 
 ### Checkout
 
@@ -31,9 +34,11 @@ wsdash --version        # wsdash 0.2.0
 mydash --version        # mydash 0.2.0
 ```
 
-`~/.local/bin` needs to be on your PATH. The checkout launchers require Python 3.11+.
+`~/.local/bin` needs to be on your PATH. The checkout launchers require Python 3.11+. This is the path that can run `wsdash install`.
 
 ## 2. See your workspaces
+
+Wheel users: the virtualenv from section 1 has to be active, or prefix `.venv/bin/`.
 
 ```sh
 wsdash scan     # discover repos/worktrees/session dirs under ~/sessions (+ editor workspaces)
@@ -41,7 +46,9 @@ wsdash          # dashboard: dirtiness 0-100, INCOMPLETE workspaces surfaced fir
 wsdash view --view detail <path>    # per-signal breakdown for one workspace
 ```
 
-## 3. Turn on event-driven updates (recommended)
+## 3. Turn on event-driven updates (checkout)
+
+Skip this section on a wheel install. `wsdash install` writes launchd and git hooks against the checkout launcher, which the wheel does not ship.
 
 ```sh
 wsdash install  # launchd WatchPaths agent + git hooks (post-commit/checkout/merge/index-change)
@@ -90,13 +97,15 @@ wsdash chat -m "Where did I leave off yesterday? What should I pick up first?"
 
 ## Uninstall
 
+A checkout that ran `wsdash install` takes the watchers and hooks back off with:
+
 ```sh
 wsdash uninstall             # removes launchd agent + restores chained git hooks
 mydash uninstall             # same executable name, same behavior
 ```
 
-Checkout launchers also need the symlinks removed: `rm ~/.local/bin/wsdash ~/.local/bin/mydash`.
-A wheel install leaves those alone; delete the virtualenv instead.
+Then remove the symlinks: `rm ~/.local/bin/wsdash ~/.local/bin/mydash`.
+A wheel install never wrote those hooks. Delete the virtualenv instead.
 Either path: `rm -rf ~/.wsdash` removes state, config, and transcripts.
 
 Next: [USER_MANUAL.md](USER_MANUAL.md) · [CONFIGURATION.md](CONFIGURATION.md) ·
