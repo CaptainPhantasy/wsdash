@@ -44,7 +44,7 @@ Command (ACCEPT E2, plus exclude this packaging note so quoting the inventory do
 grep -rnwE "TODO|FIXME" -I . --exclude-dir=.venv --exclude-dir=.git --exclude=STABILIZE.md
 ```
 
-Grace’s 8 were counted on HEAD before `STABILIZE.md` existed. Re-running the original command after this file landed also matches this note. `--exclude=STABILIZE.md` keeps the canonical eight reproducible.
+Grace’s 8 were counted on HEAD before `STABILIZE.md` existed. Re-running the original command after this file landed also matches this note. `--exclude=STABILIZE.md` keeps the canonical eight reproducible. Do not count hits inside this packaging note.
 
 | File | Hits | Kind | Disposition |
 |---|---:|---|---|
