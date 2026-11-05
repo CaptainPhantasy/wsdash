@@ -38,11 +38,13 @@ The suite is stdlib `unittest` (37 cases). The setting is required so pytest-asy
 
 Ethan: Larry’s “11” was an inventory marker-string scan, not open-work triage. **Canonical count is Grace’s 8.** Product gate = **0 open-work TODO/FIXME** once those 8 are classified.
 
-Command (ACCEPT E2):
+Command (ACCEPT E2, plus exclude this packaging note so quoting the inventory does not inflate the count):
 
 ```sh
-grep -rnwE "TODO|FIXME" -I . --exclude-dir=.venv --exclude-dir=.git
+grep -rnwE "TODO|FIXME" -I . --exclude-dir=.venv --exclude-dir=.git --exclude=STABILIZE.md
 ```
+
+Grace’s 8 were counted on HEAD before `STABILIZE.md` existed. Re-running the original command after this file landed also matches this note. `--exclude=STABILIZE.md` keeps the canonical eight reproducible.
 
 | File | Hits | Kind | Disposition |
 |---|---:|---|---|
