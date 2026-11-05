@@ -10,7 +10,7 @@ Built at Floyd's Labs, in a garage in Brown County, Indiana. The coffee tastes l
 
 **Pick up the work you left behind.**
 
-[Download v0.2.0](https://github.com/CaptainPhantasy/wsdash/releases/tag/v0.2.0) · [Report a bug](https://github.com/CaptainPhantasy/wsdash/issues) · [Floyd’s Labs](https://floyd-labs-proving-ground.captainphantasy.chatgpt.site/open-source)
+[Download v0.2.0](https://github.com/CaptainPhantasy/wsdash/releases/tag/v0.2.0) · [Report a bug](https://github.com/CaptainPhantasy/wsdash/issues) · [Floyd's Labs](https://floyd-labs-proving-ground.captainphantasy.chatgpt.site/open-source)
 
 ## Get it running
 
