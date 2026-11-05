@@ -40,14 +40,37 @@ def idle_processes() -> list:
     return stray
 
 
+# Plain next step for a failed check. Shown under the FAIL line; omitted when ok.
+NEXT_ON_FAIL = {
+    "python": "Install Python 3.11 or newer, then rerun wsdash doctor.",
+    "git": "Install git, then rerun wsdash doctor.",
+    "state-writable": "Make the state directory writable (check WSDASH_HOME), then rerun wsdash doctor.",
+    "cache-integrity": "Run wsdash doctor --repair to purge quarantined files, then rerun wsdash doctor.",
+    "launchd-plist": "On macOS run wsdash install. Elsewhere, skip launchd; wsdash scan && wsdash still works.",
+    "launchd-loaded": "On macOS run wsdash install. Then rerun wsdash doctor and expect launchd-loaded to pass.",
+    "watch-set-current": "Run wsdash install so the launchd watch set matches the registry.",
+    "zero-idle": "Quit the listed background wsdash processes (they have no terminal), then rerun wsdash doctor.",
+    "memory-ceiling": "Retry a smaller command. See the memory check in docs/TROUBLESHOOTING.md.",
+}
+
+
 def run_checks(cfg: dict) -> list:
     checks = []
 
     def add(name, ok, detail):
-        checks.append({"check": name, "ok": bool(ok), "detail": detail})
+        row = {"check": name, "ok": bool(ok), "detail": detail}
+        nxt = NEXT_ON_FAIL.get(name)
+        if nxt and not ok:
+            row["next"] = nxt
+        checks.append(row)
 
-    add("python", sys.version_info >= (3, 9), sys.version.split()[0])
-    add("git", shutil.which("git") is not None, shutil.which("git") or "not found")
+    py_ok = sys.version_info >= (3, 9)
+    py_detail = sys.version.split()[0]
+    if not py_ok:
+        py_detail = f"{py_detail} (need >= 3.9; install 3.11+)"
+    add("python", py_ok, py_detail)
+    git = shutil.which("git")
+    add("git", git is not None, git or "not found")
     try:
         store.ensure_dirs()
         probe = os.path.join(store.state_dir(), ".probe")
