@@ -86,9 +86,30 @@ That covers workspace scoring, state storage, the CLI, and stubbed LLM/MCP behav
 
 Open an issue with your platform, the version, the command, and the smallest reproduction you can stand. Leave credentials and personal transcripts out. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-## License
+## Why We Use the AGPL-3.0 License
 
-wsdash is free software under the GNU Affero General Public License, version 3 or any later version (`AGPL-3.0-or-later`). See [LICENSE](LICENSE). If you run a modified version for other people over a network, you must offer them its source code.
+At Floyd's Labs / Legacy AI, we built wsdash as a multi-workspace dashboard for
+developers: it scores unfinished work across scattered local repositories, inspects
+agent session logs, and prints the result in your terminal. It saves independent
+builders from wiring their own visibility across every repo, worktree and agent
+transcript they leave behind, so the time goes into the work instead.
+
+We release wsdash under the GNU Affero General Public License v3 (`AGPL-3.0-or-later`)
+for three plain reasons:
+
+- **Open Exchange:** We believe in putting real foundational building blocks into the
+  hands of independent developers, self-hosters and hobbyists for unhindered personal
+  and local use.
+- **The Give-Back Rule:** If you take wsdash, modify it and expose it to the public over
+  a network, such as a cloud app or hosted API service, the AGPL-3.0 requires you to
+  make your modified source code available under these same open rules.
+- **Passive Protection:** This license keeps our self-funded, independent lab work a
+  shared community asset. It stops proprietary platforms from repackaging our work into
+  closed-source commercial services without contributing back.
+
+If you are building tools for yourself, tinkering locally, or playing by the rules of
+open-source reciprocity, this is yours to use. See [`LICENSE`](LICENSE) for the full
+terms.
 
 ---
 
