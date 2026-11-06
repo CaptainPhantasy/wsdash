@@ -3,11 +3,11 @@ import time
 
 NAME = "detail"
 
-RESET, BOLD, DIM = "\x1b[0m", "\x1b[1m", "\x1b[2m"
+RESET, BOLD, DIM = "\x1b[0m", "\x1b[1m", ""
 
 
 def _c(model, code, s):
-    return f"{code}{s}{RESET}" if model.get("color") else s
+    return f"{code}{s}{RESET}" if model.get("color") and code else s
 
 
 def _status_label(status: str) -> str:

@@ -1,8 +1,13 @@
 """Default terminal table view: incomplete workspaces surfaced first."""
+import shutil
+import textwrap
+
 NAME = "table"
 
-RESET, BOLD, DIM = "\x1b[0m", "\x1b[1m", "\x1b[2m"
-RED, YEL, GRN, MAG = "\x1b[31m", "\x1b[33m", "\x1b[32m", "\x1b[35m"
+RESET, BOLD, DIM = "\x1b[0m", "\x1b[1m", ""
+# Use the terminal's own foreground; status words and weight carry meaning.
+# This respects the user's light/dark palette and avoids unreadable ANSI colors.
+FG = "\x1b[39m"
 
 # STATUS leads so a top-to-bottom scan hits unfinished work before name or kind.
 _FMT = "{status:<13} {score:>6}  {bar:<10}  {name:<24} {top:<40} {kind}"
@@ -44,23 +49,18 @@ def _top_signal(doc) -> str:
 
 
 def _legend(model, thr: float) -> list:
-    hot = 2 * thr
     lines = [
         _c(model, DIM, "score 0-100. higher means more unfinished work, and those rows come first."),
         _c(model, DIM,
            f"ok < {thr:.0f}    INCOMPLETE >= {thr:.0f}    "
            "disconnected = path missing, last score kept"),
     ]
-    if model.get("color"):
-        lines.append(_c(
-            model, DIM,
-            f"colors: green ok, yellow INCOMPLETE, red >= {hot:.0f}, magenta disconnected",
-        ))
     lines.append(_c(model, DIM, "one workspace: wsdash view --view detail <path>"))
     return lines
 
 
 def render(model: dict) -> str:
+    width = max(20, shutil.get_terminal_size(fallback=(120, 24)).columns)
     docs = sorted(model["workspaces"], key=lambda d: (-d["score"], d["name"]))
     thr = float(model["config"].get("incomplete_threshold", 15.0))
     lines = [_c(model, BOLD, f"wsdash — {len(docs)} workspaces"), ""]
@@ -72,6 +72,19 @@ def render(model: dict) -> str:
             "",
         ])
         lines.extend(_legend(model, thr))
+        if width < 116:
+            lines = lines[:2] + [part for line in lines[2:] for part in (textwrap.wrap(line, width) or [""])]
+        return "\n".join(lines)
+
+    if width < 116:
+        for doc in docs:
+            label = status_label(doc.get("status", ""))
+            lines.append(_style(model, f"{label}  {doc['score']:.1f} / 100", bold=doc.get("status") == "incomplete"))
+            for text in [doc['name'], _top_signal(doc), f"Kind: {doc.get('kind', '')}"]:
+                lines.extend(textwrap.wrap(text, width, initial_indent="  ", subsequent_indent="  "))
+            lines.append("")
+        for line in _legend({**model, "color": False}, thr):
+            lines.extend(textwrap.wrap(line, width))
         return "\n".join(lines)
 
     lines.append(_c(model, DIM, _FMT.format(
@@ -79,8 +92,6 @@ def render(model: dict) -> str:
         top="TOP SIGNAL", kind="KIND")))
     for doc in docs:
         label = status_label(doc.get("status", ""))
-        color = MAG if doc.get("status") == "disconnected" else (
-            RED if doc["score"] >= 2 * thr else (YEL if doc["score"] >= thr else GRN))
         row = _FMT.format(
             status=label,
             score=f"{doc['score']:.1f}",
@@ -89,7 +100,7 @@ def render(model: dict) -> str:
             top=_top_signal(doc)[:40],
             kind=doc.get("kind", ""),
         )
-        lines.append(_style(model, row, color=color, bold=doc.get("status") == "incomplete"))
+        lines.append(_style(model, row, color=FG, bold=doc.get("status") == "incomplete"))
     lines.append("")
     lines.extend(_legend(model, thr))
     return "\n".join(lines)
