@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wsdash"
-version = "0.2.0"
+version = "0.2.1"
 description = "On-demand workspace dashboard from Floyd's Labs"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -16,7 +16,7 @@ wsdash = "wsdash.cli:main"
 mydash = "wsdash.cli:mydash_main"
 
 [project.urls]
-Homepage = "https://floyd-labs-proving-ground.captainphantasy.chatgpt.site/open-source"
+Homepage = "https://floydslabs.com"
 Repository = "https://github.com/CaptainPhantasy/wsdash"
 Issues = "https://github.com/CaptainPhantasy/wsdash/issues"
 
@@ -24,8 +24,7 @@ Issues = "https://github.com/CaptainPhantasy/wsdash/issues"
 include = ["wsdash*"]
 
 [tool.pytest.ini_options]
-# Silence pytest-asyncio PytestDeprecationWarning _DEFAULT_FIXTURE_LOOP_SCOPE_UNSET
-# (ACCEPT_wsdash.md E1/E3). Tests themselves are stdlib unittest; no async fixtures.
+# Pin pytest-asyncio loop scope when that plugin is installed; tests are stdlib unittest.
 asyncio_default_fixture_loop_scope = "function"
 asyncio_default_test_loop_scope = "function"
 

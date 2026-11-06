@@ -21,7 +21,7 @@ DEFAULTS = {
         "failing_tests": 0.20,
         "todo_markers": 0.15,
     },
-    "launchd_label": "com.douglastalley.wsdash",
+    "launchd_label": "com.floydslabs.wsdash",
     "ignore_dirs": ["node_modules", ".venv", "venv", "__pycache__", ".tox", "dist", "build"],
 }
 

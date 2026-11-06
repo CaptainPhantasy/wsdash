@@ -96,6 +96,11 @@ def _bool(env: dict, key: str, default: bool = False) -> bool:
     return str(val).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def env_paths() -> list:
+    """The .env.local files read, highest precedence first (for user messages)."""
+    return [os.path.join(os.getcwd(), ".env.local"), os.path.join(config.home(), ".env.local")]
+
+
 def llm_config() -> dict:
     env = load()
     provider = (env.get("WSDASH_LLM_PROVIDER") or "openai").lower()

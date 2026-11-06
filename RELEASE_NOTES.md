@@ -17,8 +17,8 @@ from your actual AI-harness logs and git state.
 - **LLM Partner**: OpenAI-compatible or Anthropic endpoint from `.env.local`
   (keyless local proxies supported), Desktop Commander tools over MCP, five gate
   stages from `plan` (execute nothing) to `yolo` (no guards), 0600 transcripts.
-- **Recap**: scans Claude Code, Codex (CLI + Desktop), floyd/ff/agent-cli-b, and
-  OMP/agent-runtime-a/agent-runtime-b logs; shows per-project commits + diffs + open items; ask it
+- **Recap**: scans Claude Code, Codex (CLI + Desktop), and other local
+  agent CLI and runtime logs; shows per-project commits + diffs + open items; ask it
   in plain language and get ranked pick-this-up-first priorities.
 - **Pluggable**: drop-in signal providers and views in `~/.wsdash/`, no core edits.
 

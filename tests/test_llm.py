@@ -227,7 +227,7 @@ class RecapTests(unittest.TestCase):
         try:
             recap.HOME = TMP  # TMP contains .floyd-ff
             hs = recap.scan_floyd_family(self.now - 86400, self.now)
-            ff = next(h for h in hs if h["name"] == "ff")
+            ff = next(h for h in hs if h["name"] == "local agent CLI (floyd-ff)")
             self.assertEqual(len(ff["sessions"]), 1)
             self.assertEqual(ff["sessions"][0]["title"], "Release docs")
             self.assertIn("release notes", ff["sessions"][0]["last_user"])

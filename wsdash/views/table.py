@@ -26,7 +26,8 @@ def _style(model, s, *, color="", bold=False):
 
 def _bar(score: float, width: int = 10) -> str:
     filled = round(width * min(score, 100.0) / 100.0)
-    return "█" * filled + "░" * (width - filled)
+    # "·" is an empty track, so a zero score never reads as a filled block.
+    return "█" * filled + "·" * (width - filled)
 
 
 def status_label(status: str) -> str:

@@ -22,7 +22,9 @@ def _model(cfg, docs, color):
 
 
 def _app_name():
-    return os.path.basename(os.environ.get("WSDASH_APP_NAME") or (sys.argv[0] if sys.argv else "wsdash"))
+    name = os.path.basename(os.environ.get("WSDASH_APP_NAME") or (sys.argv[0] if sys.argv else "wsdash"))
+    # `python -m wsdash` reports argv[0] as __main__.py; show the real command name.
+    return "wsdash" if name in {"__main__.py", "__main__", ""} else name
 
 
 def _resolve_color(args):
@@ -67,7 +69,7 @@ def _load_docs(cfg, only_path=None, force=False):
             if target != ws["path"]:
                 continue
         cached = store.load_json(store.score_path(ws["id"]))
-        if not force and store.is_fresh(cached, ttl):
+        if not force and scoring.is_live(ws, cached) and store.is_fresh(cached, ttl):
             docs.append(cached)
             continue
         if provs is None:  # load providers only when a recompute is actually needed
@@ -349,7 +351,7 @@ def main(argv=None) -> int:
     hp.add_argument("source", choices=["fs", "git"])
     hp.add_argument("path", nargs="?")
 
-    sub.add_parser("install", help="install the macOS launchd agent and git hooks; rerun after the workspace set changes")
+    sub.add_parser("install", help="install git hooks (plus the launchd agent on macOS); rerun after the workspace set changes")
     uninstall = sub.add_parser("uninstall", help="remove launchd agent + git hooks")
     uninstall.add_argument("--yes", action="store_true", help="confirm destructive uninstall without prompt")
 
@@ -366,6 +368,7 @@ def main(argv=None) -> int:
     vcmd = sub.add_parser("version", help="print version")
 
     cp = sub.add_parser("chat", help="LLM Partner chat (REPL or one-shot)")
+    cp.add_argument("prompt", nargs="*", help="one-shot message, e.g. wsdash chat what is unfinished?")
     cp.add_argument("-m", "--message", help="one-shot message instead of REPL")
     cp.add_argument("--mode", choices=["plan", "ask", "allow", "auto", "yolo"],
                     default=default_chat_mode,
@@ -427,6 +430,12 @@ def main(argv=None) -> int:
 
     elif command in {"view", "ls", "list"}:
         path = getattr(args, "path", None)
+        if path and not os.path.exists(path):
+            from . import store as _store
+            tracked = {w["path"] for w in _store.load_registry()["workspaces"].values()}
+            if os.path.realpath(path) not in tracked:
+                print(f"wsdash: path not found: {path}", file=sys.stderr)
+                return 2
         view_name = getattr(args, "view", "table")
         docs = _load_docs(cfg, only_path=path)
         docs = _apply_filters(docs, args)
@@ -510,12 +519,14 @@ def main(argv=None) -> int:
     elif command == "top":
         if getattr(args, "_top_default_incomplete", False) and getattr(args, "status", None) is None:
             args.status = "incomplete"
-        docs = _load_docs(cfg)
-        docs = _apply_filters(docs, args)
+        all_docs = _load_docs(cfg)
+        docs = _apply_filters(all_docs, args)
         docs = _sort_docs(docs, "score", True)
         docs = _apply_limit(docs, args.n)
         if args.json:
             _print_json(docs)
+        elif not docs:
+            print(f"No unfinished workspaces found ({len(all_docs)} clean workspaces scanned).")
         else:
             for d in docs:
                 print(f"{d['score']:>6.1f}  {d['name']:<30} {d['path']}")
@@ -648,16 +659,25 @@ def main(argv=None) -> int:
         rep = installer.install_launchd(cfg, reg)
         hooks = installer.install_git_hooks(cfg, reg)
         rep["git_hooks_installed"] = len(hooks)
-        print(json.dumps(rep, indent=2) if args.json else
-              f"launchd: loaded={rep['loaded']} watch_paths={rep['watch_paths']} plist={rep['plist']}\n"
-              f"git hooks installed: {len(hooks)}")
-        if not rep["loaded"]:
-            print("next: launchd did not load the agent. On macOS, rerun wsdash doctor. "
-                  "The dashboard still runs with wsdash scan && wsdash.", file=sys.stderr)
-        rc = 0 if rep["loaded"] else 1
+        if args.json:
+            print(json.dumps(rep, indent=2))
+        elif rep.get("skipped"):
+            print(f"git hooks installed: {len(hooks)}")
+            print(f"launchd: skipped on {sys.platform}; background scheduling is macOS-only.")
+            print(f"hint: schedule a refresh with cron, e.g. */15 * * * * {app_name} score >/dev/null 2>&1")
+        else:
+            print(f"launchd: loaded={rep['loaded']} watch_paths={rep['watch_paths']} plist={rep['plist']}\n"
+                  f"git hooks installed: {len(hooks)}")
+            if not rep["loaded"]:
+                print("next: launchd did not load the agent. Rerun wsdash doctor. "
+                      "The dashboard still runs with wsdash scan && wsdash.", file=sys.stderr)
+        rc = 0 if (rep["loaded"] or rep.get("skipped")) else 1
 
     elif command == "uninstall":
-        if not args.yes and not _confirm("remove launchd hooks and launchd agent"):
+        if not args.yes and not (sys.stdin.isatty() and sys.stdout.isatty()):
+            print("Non-interactive session: pass --yes to confirm uninstall.", file=sys.stderr)
+            rc = 2
+        elif not args.yes and not _confirm("remove wsdash git hooks and launchd agent"):
             print("uninstall canceled")
             rc = 2
         else:
@@ -665,8 +685,11 @@ def main(argv=None) -> int:
             reg = store.load_registry()
             rep = installer.uninstall_launchd(cfg)
             removed = installer.uninstall_git_hooks(cfg, reg)
-            print(f"launchd removed={rep['removed_plist']} bootout_rc={rep['bootout_rc']}; "
-                  f"git hooks removed: {len(removed)}")
+            if rep.get("skipped"):
+                print(f"git hooks removed: {len(removed)}; launchd: skipped on {sys.platform}")
+            else:
+                print(f"launchd removed={rep['removed_plist']} bootout_rc={rep['bootout_rc']}; "
+                      f"git hooks removed: {len(removed)}")
 
     elif command == "doctor":
         from . import doctor as doctor_mod
@@ -677,7 +700,8 @@ def main(argv=None) -> int:
             _print_json(checks)
         else:
             for c in checks:
-                print(f"{'OK  ' if c['ok'] else 'FAIL'} {c['check']:<18} {c['detail']}")
+                tag = "SKIP" if c.get("skipped") else ("OK  " if c["ok"] else "FAIL")
+                print(f"{tag} {c['check']:<18} {c['detail']}")
                 if not c["ok"] and c.get("next"):
                     print(f"{'':<24}next: {c['next']}")
         rc = 0 if all(c["ok"] for c in checks) else 1
@@ -733,6 +757,8 @@ def main(argv=None) -> int:
         from .llm import chat as chat_mod
         chat_cfg = chat_mod.envfile.llm_config()
         fast = args.fast or chat_cfg["chat_fast"]
+        if not args.message and args.prompt:
+            args.message = " ".join(args.prompt)
         if args.message:
             try:
                 print(chat_mod.one_shot(cfg, args.message, mode=args.mode,
@@ -783,7 +809,15 @@ def main(argv=None) -> int:
 
     elif command == "config":
         from . import config as config_mod
-        if args.config_cmd == "path":
+        if not args.config_cmd:
+            cur = config_mod.load()
+            print(f"config file: {config_mod.config_path()}")
+            print(f"roots: {', '.join(cur.get('roots', [])) or '(none)'}")
+            print(f"incomplete threshold: {cur.get('incomplete_threshold')}  "
+                  f"cache ttl: {cur.get('cache_ttl_seconds')}s  max depth: {cur.get('max_depth')}")
+            print()
+            cf.print_help()
+        elif args.config_cmd == "path":
             print(config_mod.config_path())
         elif args.config_cmd == "show":
             payload = config_mod.load()
@@ -806,6 +840,8 @@ def main(argv=None) -> int:
                 rc = 2
             else:
                 value = _parse_cli_value(args.value)
+                if isinstance(config_mod.DEFAULTS.get(args.key), list) and isinstance(value, str):
+                    value = [value]  # `config set roots ~/code` means one root, not its characters
                 _set_nested(cur, args.key, value)
                 config_mod.save(cur)
                 print(f"set {args.key}={value}")

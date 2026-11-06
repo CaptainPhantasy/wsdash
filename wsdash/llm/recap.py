@@ -5,10 +5,10 @@ Harness coverage (CLI and Desktop variants where they exist locally):
                     sessions all land here when they touch this machine)
 - Codex:            ~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl (originator field
                     distinguishes 'Codex Desktop' vs CLI)
-- floyd family:     ~/.floyd*/floyd.db sqlite (floyd, ff, agent-cli-b, forks, ...) —
-                    agent-cli-a/ff/agent-cli-b harnesses
-- OMP:              ~/.omp/agent/agent.db threads table + harness audit log —
-                    agent-runtime-a / agent-runtime-b runtimes (source_kind distinguishes origin)
+- Local agent CLIs: SQLite session stores (sessions + messages tables), one per
+                    harness directory
+- Agent runtime DB: threads table + harness audit log (source_kind distinguishes
+                    origin)
 
 Every scanner is defensive: missing dirs => harness reported unavailable; parse
 errors are contained per-file/per-row and noted, never fatal.
@@ -221,8 +221,7 @@ def scan_codex(since: float, now: float) -> dict:
 
 def _floyd_label(dirname: str) -> str:
     base = dirname.lstrip(".")  # .floyd-ff -> floyd-ff
-    return {"floyd": "floyd (agent-cli-a)", "floyd-ff": "ff",
-            "floyd-agent-cli-b": "agent-cli-b"}.get(base, base)
+    return f"local agent CLI ({base})"
 
 
 def scan_floyd_family(since: float, now: float) -> list:
@@ -268,17 +267,17 @@ def scan_floyd_family(since: float, now: float) -> list:
             h["notes"].append(f"sqlite error: {exc}")
         out.append(h)  # always report a found db, even when quiet (0 sessions)
     if not out:
-        out.append({"name": "floyd family (floyd/ff/agent-cli-b)", "available": False,
-                    "sessions": [], "notes": ["no ~/.floyd*/floyd.db found"]})
+        out.append({"name": "local agent CLIs", "available": False,
+                    "sessions": [], "notes": ["no local session store found"]})
     return out
 
 
 def scan_omp(since: float, now: float) -> dict:
     db = os.path.join(HOME, ".omp", "agent", "agent.db")
-    h = {"name": "omp (agent-runtime-a/agent-runtime-b)", "available": os.path.isfile(db),
+    h = {"name": "agent runtime", "available": os.path.isfile(db),
          "sessions": [], "notes": []}
     if not h["available"]:
-        h["notes"].append(f"{db} not found")
+        h["notes"].append("no agent runtime database found")
         return h
     try:
         con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=3)

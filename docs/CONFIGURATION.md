@@ -19,7 +19,7 @@ Load order (later overrides earlier): `~/.wsdash/.env.local` → `./.env.local` 
 | `WSDASH_LLM_SYSTEM_PROMPT_FILE` | `~/.wsdash/prompts/partner.md` | Full system-prompt replacement file |
 | `WSDASH_MCP_COMMAND` | `npx -y @wonderwhy-er/desktop-commander` | Any stdio MCP server launch command |
 | `WSDASH_CHAT_MODE` | `ask` | Default gate stage: `plan` \| `ask` \| `allow` \| `auto` \| `yolo` |
-| `WSDASH_OMP_AUDIT_LOG` | *(auto-detected)* | Optional override for OMP harness audit log path |
+| `WSDASH_OMP_AUDIT_LOG` | *(auto-detected)* | Optional override for the agent runtime audit log path |
 
 `WSDASH_HOME` (env only) relocates all state from `~/.wsdash` — used by tests and
 useful for a scratch profile.
@@ -44,7 +44,7 @@ per-signal):
     "diff_bytes": 0.25, "unmerged_branches": 0.15, "stale_worktrees": 0.10,
     "last_touch": 0.15, "failing_tests": 0.20, "todo_markers": 0.15
   },
-  "launchd_label": "com.douglastalley.wsdash",
+  "launchd_label": "com.floydslabs.wsdash",
   "ignore_dirs": ["node_modules", ".venv", "venv", "__pycache__", ".tox", "dist", "build"]
 }
 ```
@@ -52,7 +52,7 @@ per-signal):
 Notes:
 
 - **roots** — directories scanned (bounded by `max_depth`) for repos/worktrees and
-  session dirs. Add project drives here, e.g. `"/Volumes/YourVolume/Development"`.
+  session dirs. Add project drives here, e.g. `"~/code"` or `"/mnt/projects"`.
 - **cache_ttl_seconds** — score cache expiration (the "5-minute cache").
 - **incomplete_threshold** — score at which a workspace is surfaced INCOMPLETE.
 - **weights** — per-signal; also applies to plugin providers by NAME (plugin's own

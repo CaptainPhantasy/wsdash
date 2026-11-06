@@ -45,10 +45,16 @@ def _empty_doc(ws: dict) -> dict:
             "status": "disconnected", "signals": []}
 
 
+def is_live(ws: dict, cached) -> bool:
+    """A cached score is reusable only while its connected/disconnected state
+    still matches the disk, so a deleted or restored path is never shown stale."""
+    return os.path.isdir(ws["path"]) == ((cached or {}).get("status") != "disconnected")
+
+
 def get_score(ws: dict, cfg: dict, force: bool = False, provs=None):
     """Returns (doc, origin) where origin is 'cache' or 'computed'."""
     cached = store.load_json(store.score_path(ws["id"]))
-    if not force and store.is_fresh(cached, float(cfg.get("cache_ttl_seconds", 300))):
+    if not force and is_live(ws, cached) and store.is_fresh(cached, float(cfg.get("cache_ttl_seconds", 300))):
         return cached, "cache"
     doc = compute_score(ws, cfg, provs)
     store.atomic_write_json(store.score_path(ws["id"]), doc)

@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Configure git for fixture repos
+        run: |
+          git config --global user.email ci@example.invalid
+          git config --global user.name ci
+          git config --global init.defaultBranch main
+      - name: unittest
+        run: python -m unittest discover -s tests -v
+      - name: pytest
+        run: |
+          python -m pip install pytest
+          python -m pytest -q
+      - name: Build wheel
+        run: |
+          python -m pip install build
+          python -m build
+      - name: Fresh-venv wheel smoke
+        run: |
+          python -m venv /tmp/smoke
+          /tmp/smoke/bin/python -m pip install dist/*.whl
+          cd /tmp
+          export WSDASH_HOME=/tmp/wsdash-smoke
+          /tmp/smoke/bin/wsdash --version | grep -q "wsdash 0.2.1"
+          /tmp/smoke/bin/wsdash --help >/dev/null
+          /tmp/smoke/bin/wsdash config >/dev/null
+          /tmp/smoke/bin/wsdash scan
+          /tmp/smoke/bin/wsdash view
+          /tmp/smoke/bin/wsdash doctor || true

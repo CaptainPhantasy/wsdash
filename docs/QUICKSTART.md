@@ -91,7 +91,7 @@ Inside the REPL: `/mode <plan|ask|allow|auto|yolo>`, `/tools`, `/recap`, `/clear
 ## 6. "Where did I leave off?"
 
 ```sh
-wsdash recap                 # raw scan: Claude Code, Codex, floyd/ff/agent-cli-b, OMP + git diffs
+wsdash recap                 # raw scan: Claude Code, Codex, other agent CLIs + git diffs
 wsdash chat -m "Where did I leave off yesterday? What should I pick up first?"
 ```
 

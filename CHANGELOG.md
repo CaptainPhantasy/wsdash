@@ -2,6 +2,27 @@
 
 All notable changes to wsdash. Dates are America/New_York.
 
+## [0.2.1] — 2026-11-06
+
+### Fixed
+- A workspace whose directory was deleted now shows `disconnected` right away; a
+  fresh cache no longer hides it until `score --force`.
+- `wsdash top` prints `No unfinished workspaces found (N clean workspaces scanned).`
+  instead of nothing.
+- `wsdash config` with no subcommand prints a summary and its subcommands.
+- `wsdash view <path>` for an unknown path prints `wsdash: path not found: <path>`
+  and exits 2.
+- `wsdash install` on Linux installs Git hooks, skips launchd, prints a cron hint,
+  and exits 0. `wsdash doctor` reports launchd as `SKIP` off macOS.
+- `wsdash uninstall` without a terminal asks for `--yes` and exits 2.
+- `wsdash chat what is unfinished?` works without `-m`; the missing-model error names
+  the exact `.env.local` paths.
+- `wsdash config set roots ~/code` stores one root, not a list of characters.
+- Score bars use a `·` track. Help text shows `wsdash` under `python -m wsdash`.
+
+### Changed
+- Default launchd label is `com.floydslabs.wsdash`.
+
 ## [0.2.0-beta.1] — 2026-07-09
 
 First feature-complete beta.
@@ -17,7 +38,7 @@ First feature-complete beta.
   over a read/write/dangerous classification; TTY confirmation prompts; fail-closed
   non-interactive confirms; 0600 transcripts with gate decisions logged.
 - **Recap engine** (`wsdash recap`, `--ask`): scans Claude Code, Codex CLI/Desktop,
-  floyd family (floyd/ff/agent-cli-b/…), and OMP (agent-runtime-a/agent-runtime-b) logs; resolves
+  and other local agent CLI and runtime logs; resolves
   projects touched; per-project commits/shortstat/diffs; open items derived from the
   six dirtiness signals; instruction-blob and paste-noise title filtering.
 - `wsdash mcp tools|call` debug driver; `wsdash --version`; `wsdash` PATH symlink.
@@ -33,7 +54,7 @@ First feature-complete beta.
 - Codex titles showed AGENTS.md instruction blobs; Claude titles showed pasted
   terminal output → filtered.
 - `$HOME`/volume roots treated as projects → excluded unless repos.
-- Quiet floyd harnesses omitted from recap → always listed.
+- Quiet agent CLI harnesses omitted from recap → always listed.
 - `recap --hours` accepted negatives → clamped to [1, 336].
 - `wsdash` not on PATH → `~/.local/bin` symlink; `bin/wsdash` now resolves the
   project root through symlinks (`realpath`).

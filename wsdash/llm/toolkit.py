@@ -5,7 +5,7 @@ BUILTIN_SPECS = [
     {
         "name": "get_recap",
         "description": ("Scan local AI-harness logs (Claude Code, Codex CLI/Desktop, "
-                        "floyd/ff/agent-cli-b, OMP/agent-runtime-a/agent-runtime-b) plus git activity for "
+                        "other local agent CLIs and runtimes) plus git activity for "
                         "the user's recent work. Returns per-harness sessions, per-project "
                         "commits/uncommitted changes, and concrete open items. Use this when "
                         "the user asks where they left off or what they were working on."),

@@ -146,11 +146,11 @@ Set the default mode with `WSDASH_CHAT_MODE`; switch live with `/mode`.
 |---|---|---|
 | Claude Code | `~/.claude/projects/<proj>/*.jsonl` | CLI/desktop/web sessions that touched this machine; summary records used as titles |
 | Codex | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` | `originator` distinguishes Codex Desktop vs CLI (`codex-tui`, `codex_exec`) |
-| floyd family | every `~/.floyd*/floyd.db` (sqlite, read-only) | floyd (agent-cli-a), ff, agent-cli-b, forks — always listed, 0 sessions when quiet |
-| OMP | `~/.omp/agent/agent.db` threads + harness audit log | agent-runtime-a / agent-runtime-b runtimes; `source_kind` distinguishes origin |
+| Local agent CLIs | SQLite session stores (read-only) | one row per harness directory; always listed, 0 sessions when quiet |
+| Agent runtime | runtime threads database + harness audit log | `source_kind` distinguishes origin |
 
-`wsdash recap` uses `WSDASH_OMP_AUDIT_LOG` when set, otherwise auto-detects known OMP
-audit log locations.
+`wsdash recap` uses `WSDASH_OMP_AUDIT_LOG` when set, otherwise auto-detects the agent
+runtime audit log.
 
 Output: per-harness sessions in the window (default 24 h, clamp 1–336), the projects
 those sessions touched, per-project git activity (commits, `--shortstat`, changed-file
@@ -203,7 +203,7 @@ Verify registration with `wsdash providers` / `wsdash views`.
   chat/session-<ts>.jsonl      chat transcripts (0600)
   prompts/partner.md           optional system-prompt override
   providers/  views/           plugins
-~/Library/LaunchAgents/com.douglastalley.wsdash.plist
+~/Library/LaunchAgents/com.floydslabs.wsdash.plist   (macOS only)
 ```
 
 All state writes are atomic (tmp + rename); corrupt files are quarantined

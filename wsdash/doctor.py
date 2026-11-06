@@ -89,10 +89,14 @@ def run_checks(cfg: dict) -> list:
     corrupt = glob.glob(os.path.join(store.state_dir(), "*.corrupt-*"))
     add("cache-integrity", not corrupt, f"{len(corrupt)} quarantined corrupt files")
 
-    plist = installer.plist_path(cfg)
-    add("launchd-plist", os.path.exists(plist), plist)
-    add("launchd-loaded", installer.agent_loaded(cfg),
-        f"gui/{os.getuid()}/{cfg['launchd_label']}")
+    if installer.launchd_supported():
+        plist = installer.plist_path(cfg)
+        add("launchd-plist", os.path.exists(plist), plist)
+        add("launchd-loaded", installer.agent_loaded(cfg),
+            f"gui/{os.getuid()}/{cfg['launchd_label']}")
+    else:
+        checks.append({"check": "launchd", "ok": True, "skipped": True,
+                       "detail": f"skipped on {sys.platform} (macOS only); git hooks still work"})
     drift = os.path.exists(os.path.join(config.home(), "watch-drift"))
     add("watch-set-current", not drift,
         "workspace set changed since install — run: wsdash install" if drift else "in sync")

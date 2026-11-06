@@ -33,7 +33,7 @@ is followed by `next:` with the command or fix to try. Do that, then rerun
 |---|---|---|
 | `no workspaces found under roots: …` | Roots don't contain projects at `max_depth` | Add roots in `~/.wsdash/config.json`, rerun `wsdash scan` |
 | Doctor: `FAIL watch-set-current … run: wsdash install` | Workspace set changed since the agent was installed | `wsdash install` (idempotent) — regenerates the plist and re-bootstraps |
-| Doctor: `FAIL launchd-loaded` | Agent not bootstrapped (fresh machine, or bootout) | `wsdash install`; inspect `launchctl print gui/$(id -u)/com.douglastalley.wsdash` |
+| Doctor: `FAIL launchd-loaded` | Agent not bootstrapped (fresh machine, or bootout) | `wsdash install`; inspect `launchctl print gui/$(id -u)/com.floydslabs.wsdash` |
 | Scores feel stale after plain file edits | WatchPaths is shallow; no git op happened | Expected: the 5-min TTL catches it on next view; any git operation triggers instantly |
 | Workspace shows `DISCONNECTED` | Its volume is unplugged | By design — last score retained; reconnect the volume and it recovers on the next event/view |
 | `*.corrupt-<ts>` files in `~/.wsdash/state` | A state file failed to parse (crash mid-write is auto-safe; this is rarer) | Self-healing — recomputed automatically. `wsdash doctor --repair` purges the quarantine |
@@ -44,7 +44,7 @@ is followed by `next:` with the command or fix to try. Do that, then rerun
 | Symptom | Cause | Fix |
 |---|---|---|
 | A harness shows `[unavailable]` | Its log dir/db doesn't exist on this machine | Informational, not an error |
-| floyd harness listed with 0 sessions | DB present but quiet in the window | Expected — presence ≠ activity |
+| Agent CLI harness listed with 0 sessions | DB present but quiet in the window | Expected — presence ≠ activity |
 | Sessions missing from a very long transcript | Files >8 MB are read head+tail; single records >512 KB are skipped | Bounded by design (memory ceiling); narrow `--hours` windows lose less |
 | `recap --hours -5` shows `last 1h` | Hours clamp to [1, 336] | Use a value in range |
 

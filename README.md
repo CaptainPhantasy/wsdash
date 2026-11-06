@@ -10,21 +10,21 @@ Built at Floyd's Labs, in a garage in Brown County, Indiana. The coffee tastes l
 
 **Pick up the work you left behind.**
 
-[Download v0.2.0](https://github.com/CaptainPhantasy/wsdash/releases/tag/v0.2.0) · [Report a bug](https://github.com/CaptainPhantasy/wsdash/issues) · [Floyd's Labs](https://floyd-labs-proving-ground.captainphantasy.chatgpt.site/open-source)
+[Download v0.2.1](https://github.com/CaptainPhantasy/wsdash/releases/tag/v0.2.1) · [Report a bug](https://github.com/CaptainPhantasy/wsdash/issues) · [Floyd's Labs](https://floydslabs.com)
 
 ## Get it running
 
-Requirements: **Python 3.11+ and Git. macOS if you want the launchd watchers.**
+Requirements: **Python 3.11+ and Git.** macOS adds optional launchd watchers; Linux uses Git hooks plus cron or a systemd timer.
 
-Two doors. Same commands on the other side: `wsdash` and `mydash`. `wsdash --version` prints `wsdash 0.2.0`.
+Two doors. Same commands on the other side: `wsdash` and `mydash`. `wsdash --version` prints `wsdash 0.2.1`.
 
 ### Release wheel
 
-Download `wsdash-0.2.0-py3-none-any.whl` from the [v0.2.0 release](https://github.com/CaptainPhantasy/wsdash/releases/tag/v0.2.0), then install it in its own virtualenv:
+Download `wsdash-0.2.1-py3-none-any.whl` from the [v0.2.1 release](https://github.com/CaptainPhantasy/wsdash/releases/tag/v0.2.1), then install it in its own virtualenv:
 
 ```sh
 python3 -m venv .venv
-.venv/bin/python -m pip install ./wsdash-0.2.0-py3-none-any.whl
+.venv/bin/python -m pip install ./wsdash-0.2.1-py3-none-any.whl
 .venv/bin/wsdash --version
 .venv/bin/wsdash scan
 .venv/bin/wsdash
@@ -46,7 +46,7 @@ wsdash
 
 `~/.local/bin` has to be on your PATH.
 
-The core dashboard needs no third-party Python packages. `wsdash install` is the step that puts macOS launchd watchers and managed Git hooks on the machine. The ordinary dashboard does not do that. You run it, it prints, it leaves. `wsdash uninstall` takes those watchers and hooks back off.
+The core dashboard needs no third-party Python packages. `wsdash install` is the step that puts managed Git hooks (and, on macOS, launchd watchers) on the machine. On Linux it installs the hooks, skips launchd, and prints a cron line you can use for periodic refresh. The ordinary dashboard does not do that. You run it, it prints, it leaves. `wsdash uninstall` takes those watchers and hooks back off. Without a terminal, pass `--yes`.
 
 A score is unfinished work, not a grade. High means you left a mess. It does not mean the project is bad. Deep edits can miss the launchd watch, because WatchPaths is shallow. Git hooks, or the cache expiring, still catch them.
 
@@ -62,13 +62,13 @@ Status leads the row. Higher score means more unfinished work, and that row is l
 
 ![detail view: signals ordered by how much they add](docs/screenshots/detail.png)
 
-![doctor on Linux: a failed check says what to do next](docs/screenshots/doctor.png)
+![doctor on Linux: launchd is skipped, every other check passes](docs/screenshots/doctor.png)
 
-`wsdash doctor` prints a `next:` line when a check fails. This capture is from Linux, so launchd is supposed to fail here. On a Mac, `wsdash install` is what those two lines are pointing at. The dashboard still runs without it: `wsdash scan`, then `wsdash`.
+`wsdash doctor` prints a `next:` line when a check fails. This capture is from Linux, so the launchd check reads `SKIP`. On a Mac it checks the agent, and `wsdash install` is the fix it points at.
 
 ## What is in the box
 
-The release includes `wsdash-0.2.0-py3-none-any.whl`, source where applicable, and `SHA256SUMS.txt`. Install from the tagged release's named assets. GitHub's automatic source archives are snapshots, not the release. After you download the matching files, check them:
+The release includes `wsdash-0.2.1-py3-none-any.whl`, source where applicable, and `SHA256SUMS.txt`. Install from the tagged release's named assets. GitHub's automatic source archives are snapshots, not the release. After you download the matching files, check them:
 
 ```sh
 shasum -a 256 -c SHA256SUMS.txt

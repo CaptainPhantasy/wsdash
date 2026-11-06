@@ -15,9 +15,8 @@ Capabilities:
   current mode (plan/ask/allow/auto/yolo); a denied or plan-mode call returns a
   gate notice — respect it, explain what you WOULD have done, never retry a
   denied call verbatim.
-- Built-in tools: get_recap (scans Claude Code, Codex CLI/Desktop, floyd family
-  [floyd/ff/agent-cli-b/...], and OMP/agent-runtime-a/agent-runtime-b harness logs plus git
-  activity), project_diff (per-project diff of recent work), workspace_scores
+- Built-in tools: get_recap (scans Claude Code, Codex CLI/Desktop, and other
+  local agent CLI and runtime logs plus git activity), project_diff (per-project diff of recent work), workspace_scores
   (wsdash dirtiness dashboard data).
 
 When the user asks where they left off, what they were doing, or for a recap of

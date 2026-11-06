@@ -12,6 +12,13 @@ from . import config, gitutil, store
 
 GIT_HOOKS = ["post-commit", "post-checkout", "post-merge", "post-index-change"]
 HOOK_MARK = "# wsdash-managed-hook v1"
+# Labels used by earlier releases; uninstall removes them too.
+LEGACY_LAUNCHD_LABELS = ("com.douglastalley.wsdash",)
+
+
+def launchd_supported() -> bool:
+    """launchd exists only on macOS; everywhere else it is skipped cleanly."""
+    return sys.platform == "darwin"
 
 
 def wsdash_bin() -> str:
@@ -72,6 +79,9 @@ def agent_loaded(cfg: dict) -> bool:
 
 
 def install_launchd(cfg: dict, reg: dict) -> dict:
+    if not launchd_supported():
+        return {"plist": None, "bootstrap_rc": None, "bootstrap_out": "", "loaded": False,
+                "watch_paths": 0, "skipped": True, "platform": sys.platform}
     store.ensure_dirs()
     path = plist_path(cfg)
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -88,12 +98,18 @@ def install_launchd(cfg: dict, reg: dict) -> dict:
 
 
 def uninstall_launchd(cfg: dict) -> dict:
-    rc, out = _launchctl("bootout", f"gui/{os.getuid()}/{cfg['launchd_label']}")
-    path = plist_path(cfg)
-    existed = os.path.exists(path)
-    if existed:
-        os.unlink(path)
-    return {"bootout_rc": rc, "removed_plist": existed}
+    removed = False
+    rc = None
+    for label in dict.fromkeys([cfg["launchd_label"], *LEGACY_LAUNCHD_LABELS]):
+        if launchd_supported():
+            rc_label, _ = _launchctl("bootout", f"gui/{os.getuid()}/{label}")
+            if label == cfg["launchd_label"]:
+                rc = rc_label
+        path = os.path.expanduser(f"~/Library/LaunchAgents/{label}.plist")
+        if os.path.exists(path):
+            os.unlink(path)
+            removed = True
+    return {"bootout_rc": rc, "removed_plist": removed, "skipped": not launchd_supported()}
 
 
 # ---- git hooks -------------------------------------------------------------------

@@ -137,7 +137,8 @@ class LLMClient:
         if llmcfg["provider"] not in ("openai", "anthropic"):
             raise LLMError(f"unsupported provider '{llmcfg['provider']}' (openai|anthropic)")
         if not llmcfg["model"]:
-            raise LLMError("no model configured — set WSDASH_LLM_MODEL in .env.local")
+            from . import envfile as _envfile
+            raise LLMError("no model configured: set WSDASH_LLM_MODEL in " + " or ".join(_envfile.env_paths()))
         self.cfg = llmcfg
         self.timeout = timeout
 
