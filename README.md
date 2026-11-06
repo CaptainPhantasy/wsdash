@@ -88,7 +88,7 @@ Open an issue with your platform, the version, the command, and the smallest rep
 
 ## License
 
-There is no open-source license here that grants redistribution. A public download does not invent one. The restrictions that were already on this repository are still on it.
+wsdash is free software under the GNU Affero General Public License, version 3 or any later version (`AGPL-3.0-or-later`). See [LICENSE](LICENSE). If you run a modified version for other people over a network, you must offer them its source code.
 
 ---
 

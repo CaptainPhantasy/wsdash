@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,6 +9,8 @@ description = "On-demand workspace dashboard from Floyd's Labs"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{name = "Floyd's Labs"}]
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 dependencies = []
 
 [project.scripts]
