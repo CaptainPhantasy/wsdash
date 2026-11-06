@@ -28,3 +28,6 @@ include = ["wsdash*"]
 # (ACCEPT_wsdash.md E1/E3). Tests themselves are stdlib unittest; no async fixtures.
 asyncio_default_fixture_loop_scope = "function"
 asyncio_default_test_loop_scope = "function"
+
+[tool.setuptools.data-files]
+"share/wsdash/icons" = ["assets/icons/*"]

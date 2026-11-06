@@ -360,5 +360,20 @@ class WsdashTests(unittest.TestCase):
                     pass
 
 
+
+class CompletionScriptTests(unittest.TestCase):
+    def test_bash_completion_uses_live_command_substitution(self):
+        from wsdash import cli
+        script = cli._completion_command(["scan", "score", "view"], "bash", "wsdash")
+        self.assertIn("COMPREPLY=($(compgen -W", script)
+        self.assertNotIn("\\$(", script)
+        if shutil.which("bash"):
+            out = subprocess.run(
+                ["bash", "-c", script + "\nCOMP_WORDS=(wsdash sc); COMP_CWORD=1; "
+                 "_wsdash_completion; echo \"${COMPREPLY[*]}\""],
+                capture_output=True, text=True, check=True).stdout.strip()
+            self.assertEqual(out, "scan score")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

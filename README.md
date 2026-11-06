@@ -54,7 +54,7 @@ Chat is optional. It wants your own provider credentials, and it can send select
 
 ## What the terminal says
 
-Screenshots of this tree, pointed at a throwaway fixture under `/tmp`. `bench` is unfinished and sorts first. `quiet-notes` is fine. `unplugged` is a path that left. No keys. No home directory. Not a mockup.
+Screenshots from a local fixture under `~/projects`. `bench` is unfinished and sorts first. `quiet-notes` is fine. `unplugged` is a path that left. No keys. Not a mockup.
 
 ![table view: INCOMPLETE first, then ok, then disconnected](docs/screenshots/table.png)
 
@@ -64,7 +64,7 @@ Status leads the row. Higher score means more unfinished work, and that row is l
 
 ![doctor on Linux: a failed check says what to do next](docs/screenshots/doctor.png)
 
-`wsdash doctor` prints a `next:` line when a check fails. This capture is Linux, so launchd is supposed to fail here. On a Mac, `wsdash install` is what those two lines are pointing at. The dashboard still runs without it: `wsdash scan`, then `wsdash`.
+`wsdash doctor` prints a `next:` line when a check fails. This capture is from Linux, so launchd is supposed to fail here. On a Mac, `wsdash install` is what those two lines are pointing at. The dashboard still runs without it: `wsdash scan`, then `wsdash`.
 
 ## What is in the box
 
