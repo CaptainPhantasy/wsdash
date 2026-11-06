@@ -187,7 +187,7 @@ def _completion_command(commands, shell, app_name):
         return "\n".join([
             f"{fn}() {{",
             "  local cur=${COMP_WORDS[COMP_CWORD]}",
-            f"  COMPREPLY=(\$(compgen -W '{' '.join(commands)}' -- \"$cur\"))",
+            f"  COMPREPLY=($(compgen -W '{' '.join(commands)}' -- \"$cur\"))",
             "}",
             f"complete -F {fn} {app_name}",
             "",
