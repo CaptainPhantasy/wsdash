@@ -54,7 +54,7 @@ class ChatSession:
         if not sys.stdin.isatty():
             return False  # fail closed when nobody can answer
         try:
-            ans = input(f"  ⚠ allow tool '{name}' with {json.dumps(args)[:160]} ? [y/N] ")
+            ans = input(f"  CONFIRM tool '{name}' with {json.dumps(args)[:160]} ? [y/N] ")
         except EOFError:
             return False
         return ans.strip().lower() in ("y", "yes")

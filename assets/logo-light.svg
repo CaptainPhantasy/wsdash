@@ -1,7 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc"><title id="title">Floyd's Labs</title><desc id="desc">A measured square frame holds a prism: one input becomes two useful paths.</desc><g fill="none" stroke-linecap="square" stroke-linejoin="miter">
-      <path d="M34 88V34H88M168 34H222V88M222 168V222H168M88 222H34V168" stroke="#101318" stroke-width="12"/>
-      <path d="M128 64L72 184H184Z" stroke="#101318" stroke-width="12"/>
-      <path d="M34 128H94" stroke="#935400" stroke-width="12"/>
-      <path d="M153 117L222 94" stroke="#286a65" stroke-width="12"/>
-      <path d="M162 139L222 163" stroke="#935400" stroke-width="12"/>
-    </g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title"><title id="title">wsdash — workspace radar ledger</title><path fill="#24313c" stroke="#aab6bf" stroke-width="8" stroke-linejoin="round" d="M104 64H364L424 124V436H104Z"/><path fill="#15212b" d="M128 92H352L396 136V408H128Z"/><path fill="none" stroke="#f2f0e9" stroke-width="18" d="M160 176H244M160 240H244M160 304H340M160 368H340"/><path fill="none" stroke="#d6ad68" stroke-width="15" stroke-linecap="round" d="M298 264A102 102 0 0 1 400 162M298 218A56 56 0 0 1 354 162M300 162L372 90"/><circle cx="300" cy="162" r="17" fill="#f2f0e9"/><path fill="#d6ad68" d="M62 292H104V322H62ZM62 356H104V386H62Z"/></svg>
